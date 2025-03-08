@@ -51,32 +51,29 @@ class CodeiumBlogLoader:
 
     def parse_blog_post(self, html: str) -> BlogPost:
         """
-        Parses the blog post HTML and extracts:
-          - Title: Expected to be in an <h1> tag.
-          - Date: Expected to be in a <time> tag (using the 'datetime' attribute if available).
-        Returns a BlogPost Pydantic model instance with the extracted data.
+        Parses the blog post HTML and extracts title and publication date.
+        
+        Returns:
+            BlogPost: A Pydantic model with title and date information
         """
         soup = BeautifulSoup(html, "html.parser")
-
-        # --- Extract the Title ---
-        # We assume the main title is contained in an <h1> tag.
-        title_tag = soup.find("h1")
-        if title_tag:
-            title = title_tag.get_text(strip=True)
-        else:
-            title = "Title Not Found"
-
-        # --- Extract the Publication Date ---
-        # We look for a <time> tag which might have a 'datetime' attribute.
+        
+        # Extract title using a more robust approach
+        title = (
+            soup.find("h1").get_text(strip=True) 
+            if soup.find("h1") 
+            else "Title Not Found"
+        )
+        
+        # Extract date with fallback options
         time_tag = soup.find("time")
+        date = "Date Not Found"
         if time_tag:
-            # If the <time> tag has a 'datetime' attribute, use that.
-            # Otherwise, fall back to the tag's text.
-            date = time_tag.get("datetime") if time_tag.has_attr("datetime") else time_tag.get_text(strip=True)
-        else:
-            date = "Date Not Found"
-
-        # Return a BlogPost model with the extracted data.
+            date = (
+                time_tag.get("datetime") or 
+                time_tag.get_text(strip=True)
+            )
+        
         return BlogPost(title=title, date=date)
 
     def fetch_and_parse_blog_posts(self, count: int = 3) -> None:
