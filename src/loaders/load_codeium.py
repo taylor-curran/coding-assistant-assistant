@@ -89,6 +89,7 @@ def parse_blog_post(html: str) -> BlogPost:
 
     title = extract_title(soup)
 
+
     # fake date
     date = "2023-01-01"
     content = "123456"
