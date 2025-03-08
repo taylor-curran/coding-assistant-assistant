@@ -58,6 +58,24 @@ def get_blog_post_urls_from_sitemap() -> list:
     return urls
 
 
+def extract_title(soup: BeautifulSoup) -> None:
+    h1_elements = soup.find_all("h1")
+    main_title = None
+    for h1 in h1_elements:
+        # If the h1 does not contain an <a> tag, we assume it’s the main title.
+        if not h1.find("a"):
+            main_title = h1.get_text(strip=True)
+            break
+
+    if main_title:
+        print("Main Title:", main_title)
+    else:
+        print("Main Title not found; using first h1 as fallback.")
+        main_title = h1_elements[0].get_text(strip=True)
+
+    return main_title
+
+
 def parse_blog_post(html: str) -> BlogPost:
     """
     Parses the blog post HTML to extract the title and publication date.
@@ -69,21 +87,13 @@ def parse_blog_post(html: str) -> BlogPost:
     with open("src/loaders/soup_debug.html", "w") as f:
         f.write(str(soup))
 
-    print('TODO')
+    title = extract_title(soup)
 
-    # Extract title from <h1> tag with a fallback.
-    title = (
-        soup.find("h1").get_text(strip=True) if soup.find("h1") else "Title Not Found"
-    )
+    # fake date
+    date = "2023-01-01"
+    content = "123456"
 
-    # Extract publication date from a <time> tag.
-    time_tag = soup.find("time")
-    date = "Date Not Found"
-    if time_tag:
-        date = time_tag.get("datetime") or time_tag.get_text(strip=True)
-
-    # Return the Pydantic model with an empty content field.
-    return BlogPost(title=title, date=date, content="")
+    return BlogPost(title=title, date=date, content=content)
 
 
 def fetch_and_parse_blog_posts(count: int = 3) -> None:
