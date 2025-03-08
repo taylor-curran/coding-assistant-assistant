@@ -156,7 +156,7 @@ def parse_blog_post(html: str) -> BlogPost:
     return BlogPost(title=title, date=date, content=content)
 
 
-def fetch_and_parse_blog_posts(limit: int = 5) -> None:
+def fetch_and_parse_codeium_blog_posts(limit: int = 5) -> None:
     """
     Fetches blog post URLs from the sitemap, then for each URL:
       - Fetches the raw HTML.
@@ -178,4 +178,4 @@ def fetch_and_parse_blog_posts(limit: int = 5) -> None:
 
 
 if __name__ == "__main__":
-    fetch_and_parse_blog_posts(limit=None)
+    fetch_and_parse_codeium_blog_posts(limit=None)
