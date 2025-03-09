@@ -8,10 +8,10 @@ from src.loaders.models.models import BlogPost, CodeAssistantCompany
 
 
 # Global constants.
-BASE_URL = "https://codeium.com"
+BASE_URL = "https://www.cursor.com"
 SITEMAP_URL = f"{BASE_URL}/sitemap.xml"
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; CodeiumBlogLoader/1.0; +https://codeium.com)"
+    "User-Agent": "Mozilla/5.0 (compatible; CursorBlogLoader/1.0; +https://www.cursor.com)"
 }
 
 
@@ -28,7 +28,8 @@ def fetch(url: str) -> str:
 
 def get_blog_post_urls_from_sitemap() -> list:
     """
-    Parses the sitemap XML and extracts all URLs that include '/blog/'.
+    Parses the sitemap XML and extracts all canonical blog post URLs.
+    For Cursor, we filter for URLs that include '/en/blog/' to avoid duplicates.
     Returns a list of blog post URLs.
     """
     sitemap_xml = fetch(SITEMAP_URL)
@@ -36,10 +37,12 @@ def get_blog_post_urls_from_sitemap() -> list:
     urls = []
     for loc in soup.find_all("loc"):
         url = loc.get_text()
-        if "/blog/" in url:
+        # Filter for blog URLs in the English locale
+        if "/blog/" in url and "/en/" in url:
             urls.append(url)
     return urls
 
+# TODO: Parse the blog post HTML to extract the title, publication date, and content
 
 def fetch_and_parse_cursor_blog_posts(limit: int = 5) -> None:
     """
