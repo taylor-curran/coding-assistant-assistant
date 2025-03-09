@@ -5,5 +5,5 @@ Install:
 uv venv
 source .venv/bin/activate
 
-uv pip install pydantic beautifulsoup4 httpx lxml requests-html chromadb "lxml[html_clean]" prefect
+uv pip install pydantic beautifulsoup4 httpx lxml requests-html chromadb "lxml[html_clean]" prefect openai 
 ```

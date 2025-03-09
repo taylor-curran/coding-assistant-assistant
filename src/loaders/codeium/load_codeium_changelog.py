@@ -84,14 +84,6 @@ def parse_changelog(html: str) -> list[ChangeLog]:
         )
         changelog_entries.append(changelog)
 
-    for changelog in changelog_entries:
-        print(f"Version: {changelog.version}")
-        print(f"Title: {changelog.title}")
-        print(f"Date: {changelog.date}")
-        print(f"Changes: {changelog.changes}")
-        print("\n")
-        print("\n")
-
     return changelog_entries
 
 
