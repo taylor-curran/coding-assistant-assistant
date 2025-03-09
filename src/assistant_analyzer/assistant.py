@@ -6,14 +6,12 @@ client = chromadb.PersistentClient(path="./data")
 
 collection = client.get_collection(name="coding_assistant_document_dump")
 
-print(collection.peek()['metadatas'][0])
+print(collection.peek()["metadatas"][0])
 
 print(collection.count())
 
 result = collection.query(
-    query_texts=["your search query"],
-    n_results=3,
-    include=["documents", "metadatas"]
+    query_texts=["Did cursor introduce a context awareness feature?"], n_results=3, include=["documents", "metadatas"]
 )
 
 # Access the raw text from the documents:
