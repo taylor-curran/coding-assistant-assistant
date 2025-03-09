@@ -73,6 +73,8 @@ def fetch_and_parse_cursor_changelog() -> None:
         # Print the changelog model as JSON (Pydantic V2).
         print(changelog.model_dump_json(indent=2))
         print("\n")
+    
+    return changelogs
 
 
 if __name__ == "__main__":
