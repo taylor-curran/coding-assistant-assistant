@@ -59,11 +59,6 @@ def parse_changelog(html: str) -> list[ChangeLog]:
         )
         changelogs.append(changelog)
 
-    version_list = [changelog.version for changelog in changelogs]
-
-    for i, changelog in enumerate(list(reversed(changelogs))):
-        changelog.index = i
-
     # TODO: I could impute version from title
     # TODO: I could also impute date from some older titles
 
@@ -76,12 +71,16 @@ def parse_changelog(html: str) -> list[ChangeLog]:
     return changelogs
 
 
-def fetch_and_parse_cursor_changelog() -> None:
+def fetch_and_parse_cursor_changelog() -> list[ChangeLog]:
     html = fetch_rendered(CURSOR_CHANGELOG_URL)
 
     changelogs = parse_changelog(html)
 
     print(f"Found {len(changelogs)} changelogs.")
+
+    # assign index after reversing the list
+    for i, changelog in enumerate(list(reversed(changelogs))):
+        changelog.index = i
 
     for changelog in changelogs[:2]:
         # Print the changelog model as JSON (Pydantic V2).
