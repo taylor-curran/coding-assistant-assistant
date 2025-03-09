@@ -1,11 +1,12 @@
 from requests_html import HTMLSession
 import httpx
+from prefect import task
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; BlogLoader/1.0; +https://example.com)"
 }
 
-
+@task
 def fetch(url: str) -> str:
     """
     Fetches the raw HTML (or XML) content for a given URL using httpx.
@@ -16,7 +17,7 @@ def fetch(url: str) -> str:
         response.raise_for_status()
         return response.text
 
-
+@task
 def fetch_rendered(url: str, sleep=3) -> str:
     """
     Fetches the rendered HTML content for a given URL using requests_html.

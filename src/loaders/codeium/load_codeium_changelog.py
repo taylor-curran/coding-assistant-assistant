@@ -1,13 +1,25 @@
 # src/loaders/codeium/load_codeium_changelog.py
 from src.utils.network import fetch_rendered, fetch
 from src.loaders.models.models import ChangeLog, CodeAssistantCompany
-
+from prefect import task, flow
 from bs4 import BeautifulSoup
 
 CODEIUM_CHANGELOG_URL = "https://codeium.com/changelog"
 
 
+@task
 def parse_changelog(html: str) -> list[ChangeLog]:
+    """
+    Parse the HTML from the Codeium changelog page into a list of ChangeLog models.
+
+    The function loops over each version update which is inside a div with aria-label="changelog-layout",
+    extracting the version, title, and changes text. The version and date are extracted using a regex,
+    and the title is in an <h2> tag. The changes text is gathered by removing any containers that hold the
+    version text from a copy of the article, and then using the cleaned-up article copy to get all remaining
+    text.
+
+    The function returns a list of ChangeLog models.
+    """
     soup = BeautifulSoup(html, "html.parser")
     changelog_entries = []
 
@@ -82,7 +94,13 @@ def parse_changelog(html: str) -> list[ChangeLog]:
     return changelog_entries
 
 
+@flow(log_prints=True)
 def fetch_and_parse_codeium_changelog() -> list[ChangeLog]:
+    """
+    Fetches the raw HTML from the Codeium changelog page, parses it into a list of ChangeLog models,
+    assigns indices to each, and prints the first two and last two ChangeLogs as JSON for sanity checking.
+    Returns the list of ChangeLog models.
+    """
     html = fetch_rendered(CODEIUM_CHANGELOG_URL)
 
     changelogs = parse_changelog(html)
@@ -95,8 +113,6 @@ def fetch_and_parse_codeium_changelog() -> list[ChangeLog]:
         # Print the changelog model as JSON (Pydantic V2).
         print(changelog.model_dump_json(indent=2))
         print("\n")
-
-    # TODO: I could consolidate patches with major versions
 
     return changelogs
 

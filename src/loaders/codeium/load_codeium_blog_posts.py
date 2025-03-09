@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import json
 from src.loaders.models.models import BlogPost, CodeAssistantCompany
 from src.utils.network import fetch, fetch_rendered
+from prefect import flow, task
 
 BASE_URL = "https://codeium.com"
 SITEMAP_URL = f"{BASE_URL}/sitemap.xml"
@@ -100,6 +101,7 @@ def extract_content(soup: BeautifulSoup) -> str:
         return None
 
 
+@task
 def parse_blog_post(html: str, url: str) -> BlogPost:
     """
     Parses the blog post HTML to extract the title, publication date, and content.
@@ -122,6 +124,7 @@ def parse_blog_post(html: str, url: str) -> BlogPost:
     )
 
 
+@flow(log_prints=True)
 def fetch_and_parse_codeium_blog_posts(limit: int = 5) -> None:
     """
     Fetches blog post URLs from the sitemap, then for each URL:

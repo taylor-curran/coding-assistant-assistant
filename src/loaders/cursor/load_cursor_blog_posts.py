@@ -1,13 +1,14 @@
 # src/loaders/cursor/load_cursor_blog_posts.py
 
 from bs4 import BeautifulSoup
-
+from prefect import flow, task
 from src.utils.network import fetch
 
 BASE_URL = "https://www.cursor.com"
 SITEMAP_URL = f"{BASE_URL}/sitemap.xml"
 
 
+@task
 def get_blog_post_urls_from_sitemap() -> list:
     """
     Parses the sitemap XML and extracts all canonical blog post URLs.
@@ -28,6 +29,7 @@ def get_blog_post_urls_from_sitemap() -> list:
 # TODO: Parse the blog post HTML to extract the title, publication date, and content
 
 
+@flow(log_prints=True)
 def fetch_and_parse_cursor_blog_posts(limit: int = 5) -> None:
     """
     Fetches blog post URLs from the sitemap, then for each URL:
@@ -40,5 +42,4 @@ def fetch_and_parse_cursor_blog_posts(limit: int = 5) -> None:
 
 
 if __name__ == "__main__":
-    fetch_and_parse_cursor_blog_posts()
     fetch_and_parse_cursor_blog_posts()
