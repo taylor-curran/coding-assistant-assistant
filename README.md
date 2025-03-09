@@ -5,5 +5,5 @@ Install:
 uv venv
 source .venv/bin/activate
 
-uv pip install pydantic beautifulsoup4 httpx lxml requests-html "lxml[html_clean]"
+uv pip install pydantic beautifulsoup4 httpx lxml requests-html chromadb "lxml[html_clean]"
 ```
