@@ -26,6 +26,21 @@ def fetch(url: str) -> str:
         return response.text
 
 
+def get_blog_post_urls_from_sitemap() -> list:
+    """
+    Parses the sitemap XML and extracts all URLs that include '/blog/'.
+    Returns a list of blog post URLs.
+    """
+    sitemap_xml = fetch(SITEMAP_URL)
+    soup = BeautifulSoup(sitemap_xml, "xml")
+    urls = []
+    for loc in soup.find_all("loc"):
+        url = loc.get_text()
+        if "/blog/" in url:
+            urls.append(url)
+    return urls
+
+
 def fetch_rendered(url: str, sleep=5) -> str:
     """
     Fetches the rendered HTML content for a given URL using requests_html.
@@ -43,21 +58,6 @@ def fetch_rendered(url: str, sleep=5) -> str:
     rendered_html = r.html.html
 
     return rendered_html
-
-
-def get_blog_post_urls_from_sitemap() -> list:
-    """
-    Parses the sitemap XML and extracts all URLs that include '/blog/'.
-    Returns a list of blog post URLs.
-    """
-    sitemap_xml = fetch(SITEMAP_URL)
-    soup = BeautifulSoup(sitemap_xml, "xml")
-    urls = []
-    for loc in soup.find_all("loc"):
-        url = loc.get_text()
-        if "/blog/" in url:
-            urls.append(url)
-    return urls
 
 
 def extract_title(soup: BeautifulSoup) -> str:

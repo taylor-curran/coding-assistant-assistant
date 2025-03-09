@@ -2,13 +2,9 @@
 
 import httpx
 from bs4 import BeautifulSoup
-from pydantic import BaseModel
 from requests_html import HTMLSession
 import json
-
-
-# Define a simple Pydantic model for a blog post.
-# Keeping this for compatibility; set to an empty string if unused.
+from src.loaders.models.models import BlogPost, CodeAssistantCompany
 
 
 # Global constants.
