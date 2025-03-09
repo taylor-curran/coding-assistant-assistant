@@ -15,11 +15,12 @@ openai_ef = embedding_functions.OpenAIEmbeddingFunction(
     api_key=openai_api_key, model_name="text-embedding-3-small"
 )
 
-
 def clean_metadata(metadata: dict) -> dict:
     # Remove keys with None values.
-    return {k: v for k, v in metadata.items() if v is not None}
-
+    cleaned = {k: v for k, v in metadata.items() if v is not None}
+    # Remove the 'changes' key to avoid duplicating the raw text.
+    cleaned.pop("changes", None)
+    return cleaned
 
 @flow(log_prints=True)
 def refresh_changelog():
@@ -46,7 +47,7 @@ def refresh_changelog():
     cursor_changelogs = fetch_and_parse_cursor_changelog()
     all_changelogs = codeium_changelogs + cursor_changelogs
 
-    # Check each changelog by its unique_id.
+    # Check each changelog by its unique_id and build a list of new items.
     new_items = []
     for changelog in all_changelogs:
         if not changelog.unique_id:
@@ -63,44 +64,19 @@ def refresh_changelog():
         else:
             print(f"Changelog already exists: {changelog.unique_id}")
 
-    # Print duplicates before deduplication for inspection.
-    duplicates = {}
-    for changelog in new_items:
-        duplicates.setdefault(changelog.unique_id, []).append(changelog)
-    for uid, changelog_list in duplicates.items():
-        if len(changelog_list) > 1:
-            print(f"\nDuplicate found for unique_id {uid}:")
-            for cl in changelog_list:
-                print(f"   Title: {cl.title} --- Version: {cl.version}")
-                print(f"   Changes: {cl.changes}\n")
-
-    # Deduplicate new_items based on unique_id.
-    unique_new_items = {
-        changelog.unique_id: changelog for changelog in new_items
-    }.values()
-    unique_new_items = list(unique_new_items)
-
-    # Prepare metadata by cleaning out None values.
-    metadatas_to_add = [
-        clean_metadata(changelog.model_dump()) for changelog in unique_new_items
-    ]
-
-    # Print metadata for debugging.
-    for md in metadatas_to_add:
-        print("Cleaned metadata:", md)
+    # Prepare metadata by cleaning out None values (without duplicating raw text).
+    metadatas_to_add = [clean_metadata(changelog.model_dump()) for changelog in new_items]
 
     # If there are new items, add them to the collection.
-    if unique_new_items:
-        ids_to_add = [changelog.unique_id for changelog in unique_new_items]
-        documents_to_add = [
-            changelog.changes for changelog in unique_new_items
-        ]  # The text to embed.
+    if new_items:
+        ids_to_add = [changelog.unique_id for changelog in new_items]
+        documents_to_add = [changelog.changes for changelog in new_items]  # The text to embed.
         collection.add(
             ids=ids_to_add,
             documents=documents_to_add,
             metadatas=metadatas_to_add,
         )
-        print(f"Added {len(unique_new_items)} new changelogs to the collection.")
+        print(f"Added {len(new_items)} new changelogs to the collection.")
     else:
         print("No new changelogs found.")
 
@@ -108,7 +84,6 @@ def refresh_changelog():
     final_count = collection.count()
     print("Number of items in the collection after processing:", final_count)
     print("Difference:", final_count - original_count)
-
 
 if __name__ == "__main__":
     refresh_changelog()
