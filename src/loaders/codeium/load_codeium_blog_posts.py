@@ -1,29 +1,12 @@
 # src/loaders/codeium/load_codeium_blog_posts.py
 
-import httpx
 from bs4 import BeautifulSoup
-from requests_html import HTMLSession
 import json
 from src.loaders.models.models import BlogPost, CodeAssistantCompany
+from src.utils.network import fetch, fetch_rendered
 
-
-# Global constants.
 BASE_URL = "https://codeium.com"
 SITEMAP_URL = f"{BASE_URL}/sitemap.xml"
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; CodeiumBlogLoader/1.0; +https://codeium.com)"
-}
-
-
-def fetch(url: str) -> str:
-    """
-    Fetches the raw HTML (or XML) content for a given URL using httpx.
-    Raises an error if the response status is not 200.
-    """
-    with httpx.Client(headers=HEADERS, timeout=30) as client:
-        response = client.get(url)
-        response.raise_for_status()
-        return response.text
 
 
 def get_blog_post_urls_from_sitemap() -> list:
@@ -39,25 +22,6 @@ def get_blog_post_urls_from_sitemap() -> list:
         if "/blog/" in url:
             urls.append(url)
     return urls
-
-
-def fetch_rendered(url: str, sleep=5) -> str:
-    """
-    Fetches the rendered HTML content for a given URL using requests_html.
-    Uses HTMLSession to execute JavaScript on the page, which is necessary for
-    Codeium's blog pages to render their content. Adjust the sleep parameter as
-    needed to ensure the JavaScript has enough time to execute.
-    """
-    session = HTMLSession()
-    r = session.get(url)
-
-    # Render the page to execute JavaScript (adjust sleep as needed)
-    r.html.render(sleep=sleep)
-
-    # Get the fully rendered HTML
-    rendered_html = r.html.html
-
-    return rendered_html
 
 
 def extract_title(soup: BeautifulSoup) -> str:

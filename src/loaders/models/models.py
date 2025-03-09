@@ -18,6 +18,13 @@ class BlogPost(BaseModel):
     company: CodeAssistantCompany
 
 
+class ChangeLog(BaseModel):
+    version: str
+    date: Optional[str] = None
+    changes: str
+    company: CodeAssistantCompany
+
+
 # Example usage:
 post = BlogPost(
     url="https://example.com",
@@ -25,7 +32,5 @@ post = BlogPost(
     content="Some content",
     company=CodeAssistantCompany.CODEIUM_ENTERPRISE,
 )
-
-print(post)
 
 print(post)
