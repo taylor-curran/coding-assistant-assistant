@@ -45,7 +45,7 @@ def parse_changelog(html: str) -> list[ChangeLog]:
         # --- Extract the title ---
         # The title is in the <h2> tag.
         title_tag = article.find("h2")
-        title = title_tag.get_text(" ", strip=True) if title_tag else ""
+        title = title_tag.get_text(" ", strip=True) if title_tag else "No Title Found"
 
         # --- Remove the version (and title if desired) from a copy of the article ---
         # This avoids duplicating the version text when we gather the changes.
@@ -138,7 +138,7 @@ def fetch_and_parse_cursor_changelog() -> list[ChangeLog]:
     changelogs = impute_changelog_missing_data(changelogs)
 
     for changelog in changelogs:
-        changelog.unique_id = f"{changelog.company.value}_{changelog.version}"
+        changelog.unique_id = f"{changelog.company.value}_{changelog.version}_{re.sub(r'[ \,:;!?\-]', '_', changelog.title.lower())}"
 
     # Print sanity checkers
     for changelog in changelogs[:2]:

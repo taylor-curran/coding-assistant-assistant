@@ -4,6 +4,7 @@ from src.utils.network import fetch_rendered, fetch
 from src.loaders.models.models import ChangeLog, CodeAssistantCompany
 from prefect import task, flow
 from bs4 import BeautifulSoup
+import re
 
 CODEIUM_CHANGELOG_URL = "https://codeium.com/changelog"
 
@@ -103,7 +104,7 @@ def fetch_and_parse_codeium_changelog() -> list[ChangeLog]:
         changelog.index = i
 
     for changelog in changelogs:
-        changelog.unique_id = f"{changelog.company.value}_{changelog.version}"
+        changelog.unique_id = f"{changelog.company.value}_{changelog.version}_{re.sub(r'[ \,:;!?\-]', '_', changelog.title.lower())}"
 
     # Print sanity checkers
     for changelog in changelogs[:2]:
