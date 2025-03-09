@@ -21,8 +21,12 @@ def fetch_rendered(url: str, sleep=3) -> str:
     """
     Fetches the rendered HTML content for a given URL using requests_html.
     Uses HTMLSession to execute JavaScript on the page, which is necessary for
-    Codeium's blog pages to render their content. Adjust the sleep parameter as
+    some websites to render their content. Adjust the sleep parameter as
     needed to ensure the JavaScript has enough time to execute.
+
+    :param url: The URL to fetch
+    :param sleep: The number of seconds to wait for JavaScript to execute
+    :return: The fully rendered HTML content
     """
     session = HTMLSession()
     r = session.get(url)
