@@ -23,14 +23,3 @@ class ChangeLog(BaseModel):
     date: Optional[str] = None
     changes: str
     company: CodeAssistantCompany
-
-
-# Example usage:
-post = BlogPost(
-    url="https://example.com",
-    title="AI Development",
-    content="Some content",
-    company=CodeAssistantCompany.CODEIUM_ENTERPRISE,
-)
-
-print(post)
