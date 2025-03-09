@@ -1,15 +1,10 @@
+# src/loaders/codeium/load_codeium_blog_posts.py
+
 import httpx
 from bs4 import BeautifulSoup
-from pydantic import BaseModel
 from requests_html import HTMLSession
 import json
-
-
-# Define a simple Pydantic model for a blog post.
-class BlogPost(BaseModel):
-    title: str
-    date: str
-    content: str  # Keeping this for compatibility; set to an empty string if unused.
+from src.loaders.models.models import BlogPost, CodeAssistantCompany
 
 
 # Global constants.
@@ -141,10 +136,11 @@ def extract_content(soup: BeautifulSoup) -> str:
         return None
 
 
-def parse_blog_post(html: str) -> BlogPost:
+def parse_blog_post(html: str, url: str) -> BlogPost:
     """
     Parses the blog post HTML to extract the title, publication date, and content.
     """
+
     soup = BeautifulSoup(html, "html.parser")
 
     title = extract_title(soup)
@@ -153,7 +149,13 @@ def parse_blog_post(html: str) -> BlogPost:
 
     content = extract_content(soup)
 
-    return BlogPost(title=title, date=date, content=content)
+    return BlogPost(
+        url=url,
+        title=title,
+        date=date,
+        content=content,
+        company=CodeAssistantCompany.CODEIUM_ENTERPRISE,
+    )
 
 
 def fetch_and_parse_codeium_blog_posts(limit: int = 5) -> None:
@@ -171,11 +173,11 @@ def fetch_and_parse_codeium_blog_posts(limit: int = 5) -> None:
 
     for url in list(reversed(urls))[:limit]:
         html = fetch_rendered(url)
-        blog_post = parse_blog_post(html)
+        blog_post = parse_blog_post(html, url)
         # Print the blog post model as JSON (Pydantic V2).
         print(blog_post.model_dump_json(indent=2))
         print("\n")
 
 
 if __name__ == "__main__":
-    fetch_and_parse_codeium_blog_posts(limit=None)
+    fetch_and_parse_codeium_blog_posts(limit=5)
