@@ -1,6 +1,5 @@
 # src/loaders/cursor/load_cursor_changelog.py
 
-
 from bs4 import BeautifulSoup
 from src.loaders.models.models import ChangeLog, CodeAssistantCompany
 from src.utils.network import fetch, fetch_rendered
@@ -138,14 +137,11 @@ def fetch_and_parse_cursor_changelog() -> list[ChangeLog]:
 
     changelogs = impute_changelog_missing_data(changelogs)
 
+    for changelog in changelogs:
+        changelog.unique_id = f"{changelog.company.value}_{changelog.version}"
+
     # Print sanity checkers
     for changelog in changelogs[:2]:
-        # Print the changelog model as JSON (Pydantic V2).
-        print(changelog.model_dump_json(indent=2))
-        print("\n")
-
-    for changelog in changelogs[-2:]:
-        # Print the changelog model as JSON (Pydantic V2).
         print(changelog.model_dump_json(indent=2))
         print("\n")
 

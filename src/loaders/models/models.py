@@ -1,6 +1,7 @@
+# src/loaders/models/models.py
+
 from enum import Enum
 from typing import Optional
-
 from pydantic import BaseModel
 
 
@@ -16,6 +17,7 @@ class BlogPost(BaseModel):
     date: Optional[str] = None
     content: str
     company: CodeAssistantCompany
+    unique_id: Optional[str] = None
 
 
 class ChangeLog(BaseModel):
@@ -25,3 +27,4 @@ class ChangeLog(BaseModel):
     date: Optional[str] = None
     changes: str
     company: CodeAssistantCompany
+    unique_id: Optional[str] = None

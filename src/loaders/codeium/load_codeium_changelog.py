@@ -1,4 +1,5 @@
 # src/loaders/codeium/load_codeium_changelog.py
+
 from src.utils.network import fetch_rendered, fetch
 from src.loaders.models.models import ChangeLog, CodeAssistantCompany
 from prefect import task, flow
@@ -109,8 +110,11 @@ def fetch_and_parse_codeium_changelog() -> list[ChangeLog]:
     for i, changelog in enumerate(list(reversed(changelogs))):
         changelog.index = i
 
+    for changelog in changelogs:
+        changelog.unique_id = f"{changelog.company.value}_{changelog.version}"
+
+    # Print sanity checkers
     for changelog in changelogs[:2]:
-        # Print the changelog model as JSON (Pydantic V2).
         print(changelog.model_dump_json(indent=2))
         print("\n")
 

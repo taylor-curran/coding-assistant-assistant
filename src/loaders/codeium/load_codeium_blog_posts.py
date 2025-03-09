@@ -115,13 +115,15 @@ def parse_blog_post(html: str, url: str) -> BlogPost:
 
     content = extract_content(soup)
 
-    return BlogPost(
+    blog_post = BlogPost(
         url=url,
         title=title,
         date=date,
         content=content,
         company=CodeAssistantCompany.CODEIUM_ENTERPRISE,
     )
+
+    return blog_post
 
 
 @flow(log_prints=True)
@@ -138,13 +140,27 @@ def fetch_and_parse_codeium_blog_posts(limit: int = 5) -> None:
     if limit is None:
         limit = len(urls)
 
+    blog_posts = []
+
     for url in list(reversed(urls))[:limit]:
         html = fetch_rendered(url)
         blog_post = parse_blog_post(html, url)
-        # Print the blog post model as JSON (Pydantic V2).
-        print(blog_post.model_dump_json(indent=2))
+        blog_posts.append(blog_post)
+
+    for blog_post in blog_posts:
+        blog_post.unique_id = f"{blog_post.company.value}_{blog_post.url}"
+
+    # print sanity checkers
+    if limit < 3:
+        print(blog_posts[0].model_dump_json(indent=2))
         print("\n")
+    else:
+        for blog_post in blog_posts[:3]:
+            print(blog_post.model_dump_json(indent=2))
+            print("\n")
+
+    return blog_posts
 
 
 if __name__ == "__main__":
-    fetch_and_parse_codeium_blog_posts(limit=5)
+    fetch_and_parse_codeium_blog_posts(limit=4)
