@@ -2,7 +2,6 @@
 
 
 from bs4 import BeautifulSoup
-import json
 from src.loaders.models.models import ChangeLog, CodeAssistantCompany
 from src.utils.network import fetch, fetch_rendered
 import re
@@ -55,7 +54,7 @@ def parse_changelog(html: str) -> list[ChangeLog]:
             version=version,
             date=None,  # No date available on the page
             changes=f"{title}\n{changes}",
-            company=CodeAssistantCompany.CODEIUM_ENTERPRISE,
+            company=CodeAssistantCompany.CURSOR_ENTERPRISE,
         )
         changelogs.append(changelog)
 
