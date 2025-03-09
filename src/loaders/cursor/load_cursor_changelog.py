@@ -5,6 +5,9 @@ from bs4 import BeautifulSoup
 import json
 from src.loaders.models.models import ChangeLog, CodeAssistantCompany
 from src.utils.network import fetch, fetch_rendered
+import re
+
+# TODO: Determine how to impute date data
 
 CURSOR_CHANGELOG_URL = "https://www.cursor.com/en/changelog"
 
@@ -12,37 +15,49 @@ CURSOR_CHANGELOG_URL = "https://www.cursor.com/en/changelog"
 def parse_changelog(html: str) -> list[ChangeLog]:
     soup = BeautifulSoup(html, "html.parser")
     changelogs = []
+    version_regex = re.compile(
+        r"^\d+\.\d+\.x$"
+    )  # matches strings like "0.46.x", "0.45.x", etc.
 
-    # Each version update is in an <article> tag
+    # Loop over each version update which is inside an <article>
     for article in soup.find_all("article"):
-        # Extract the version, which is in a <div> with a bunch of classes.
-        # (Adjust the class names or use other attributes if needed.)
-        version_div = article.find("div", class_="inline-flex items-center font-mono")
-        version = version_div.get_text(strip=True) if version_div else ""
+        # --- Extract the version using a regex ---
+        # Look for any <p> whose text matches our version pattern.
+        version_tag = article.find(
+            lambda tag: tag.name == "p"
+            and tag.get_text(strip=True)
+            and version_regex.match(tag.get_text(strip=True))
+        )
+        version = version_tag.get_text(strip=True) if version_tag else ""
 
-        # The title is in the <h2> tag
+        # --- Extract the title ---
+        # The title is in the <h2> tag.
         title_tag = article.find("h2")
-        title = title_tag.get_text(strip=True) if title_tag else ""
+        title = title_tag.get_text(" ", strip=True) if title_tag else ""
 
-        # For the changes, collect all paragraphs and list items.
-        # This will include the description and all bullet items.
-        changes_parts = []
-        for tag in article.find_all(["p", "li"]):
-            text = tag.get_text(strip=True)
-            if text:
-                changes_parts.append(text)
-        changes = "\n".join(changes_parts)
+        # --- Remove the version (and title if desired) from a copy of the article ---
+        # This avoids duplicating the version text when we gather the changes.
+        article_copy = BeautifulSoup(str(article), "html.parser").article
+        if article_copy:
+            # Remove any container that holds the version text.
+            for tag in article_copy.find_all(
+                lambda t: t.name in ["div", "p", "h2"]
+                and version_regex.match(t.get_text(strip=True) or "")
+            ):
+                tag.decompose()
 
-        # Create a ChangeLog instance (date is optional; here, we set it to None)
+        # --- Extract changes ---
+        # Use the cleaned-up article copy to get all remaining text.
+        changes = article_copy.get_text(separator="\n", strip=True)
+
+        # Create the ChangeLog instance
         changelog = ChangeLog(
             version=version,
-            date=None,
+            date=None,  # No date available on the page
             changes=f"{title}\n{changes}",
             company=CodeAssistantCompany.CODEIUM_ENTERPRISE,
         )
         changelogs.append(changelog)
-
-    breakpoint()
 
     return changelogs
 
@@ -54,7 +69,7 @@ def fetch_and_parse_cursor_changelog() -> None:
 
     print(f"Found {len(changelogs)} changelogs.")
 
-    for changelog in changelogs[5]:
+    for changelog in changelogs[:5]:
         # Print the changelog model as JSON (Pydantic V2).
         print(changelog.model_dump_json(indent=2))
         print("\n")
