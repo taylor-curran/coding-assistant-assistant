@@ -60,7 +60,7 @@ async def query_vector_store(ctx: RunContext, query: str) -> str:
 
 # --- Run the agent with a sample query ---
 if __name__ == "__main__":
-    sample_query = "Did cursor introduce a context awareness feature?"
+    sample_query = "Did cursor introduce a context awareness feature? If so, which version introduced it?"
     result = agent.run_sync(sample_query)
     print("Agent response:")
     print(result.data)
