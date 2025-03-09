@@ -20,6 +20,8 @@ class BlogPost(BaseModel):
 
 class ChangeLog(BaseModel):
     version: str
+    index: Optional[int] = None
+    title: Optional[str] = None
     date: Optional[str] = None
     changes: str
     company: CodeAssistantCompany
