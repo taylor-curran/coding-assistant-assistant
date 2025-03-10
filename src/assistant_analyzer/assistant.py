@@ -1,3 +1,5 @@
+# src/assistant_analyzer/assistant.py
+
 import chromadb
 import chromadb.utils.embedding_functions as embedding_functions
 from prefect.blocks.system import Secret
@@ -60,7 +62,7 @@ async def query_vector_store(ctx: RunContext, query: str) -> str:
 
 # --- Run the agent with a sample query ---
 if __name__ == "__main__":
-    sample_query = "Did cursor introduce a context awareness feature? If so, which version introduced it?"
+    sample_query = "Did cursor introduce a feature like codeium's context awareness feature? If so, which version introduced it?"
     result = agent.run_sync(sample_query)
     print("Agent response:")
     print(result.data)
