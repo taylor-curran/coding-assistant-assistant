@@ -45,3 +45,11 @@ collection.query(
     query_embeddings=[[11.1, 12.1, 13.1],[1.1, 2.3, 3.2], ...],
     include=["documents"]
 )
+
+
+# How to call prefect blocks
+
+from prefect.blocks.notifications import SlackWebhook
+
+slack_webhook_block = SlackWebhook.load("product-channel")
+slack_webhook_block.notify("Hello from Prefect!")
