@@ -10,9 +10,8 @@ slack_webhook_block.notify("Hello from Prefect!")
 
 # src/loaders/cursor/load_cursor_docs.py
 from bs4 import BeautifulSoup
-from prefect import flow
 
-from src.utils.network import fetch, fetch_rendered
+from src.utils.network import fetch
 from src.loaders.models.models import DocsPage, CodeAssistantCompany
 
 BASE_URL = "https://docs.cursor.com"
@@ -70,7 +69,6 @@ def parse_docs_file(html: str, url: str) -> DocsPage:
     )
 
 
-@flow(log_prints=True)
 def fetch_and_parse_cursor_docs():
     urls = get_doc_pages_from_sitemap()
     print(f"Found {len(urls)} doc file URLs in sitemap.")
