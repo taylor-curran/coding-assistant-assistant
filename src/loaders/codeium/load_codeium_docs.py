@@ -9,7 +9,6 @@ BASE_URL = "https://docs.codeium.com"
 SITEMAP_URL = f"{BASE_URL}/sitemap.xml"
 
 
-# model this off of get_blog_post_urls_from_sitemap()
 def get_doc_pages_from_sitemap():
     sitemap_xml = fetch(SITEMAP_URL)
     soup = BeautifulSoup(sitemap_xml, "xml")
