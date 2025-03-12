@@ -1,55 +1,95 @@
-Query and Get Data from Chroma Collections
-Chroma collections can be queried in a variety of ways, using the .query method.
-
-You can query by a set of query embeddings.
-
-
-collection.query(
-    query_embeddings=[[11.1, 12.1, 13.1],[1.1, 2.3, 3.2], ...],
-    n_results=10,
-    where={"metadata_field": "is_equal_to_this"},
-    where_document={"$contains":"search_string"}
-)
-The query will return the n results closest matches to each query embedding, in order. An optional where filter dictionary can be supplied to filter by the metadata associated with each document. Additionally, an optional where document filter dictionary can be supplied to filter by contents of the document.
-
-If the supplied query embeddings are not the same dimension as the collection, an exception will be raised.
-
-You can also query by a set of query texts. Chroma will first embed each query text with the collection's embedding function, and then perform the query with the generated embedding.
-
-
-collection.query(
-    query_texts=["doc10", "thus spake zarathustra", ...],
-    n_results=10,
-    where={"metadata_field": "is_equal_to_this"},
-    where_document={"$contains":"search_string"}
-)
-You can also retrieve items from a collection by id using .get.
-
-
-collection.get(
-	ids=["id1", "id2", "id3", ...],
-	where={"style": "style1"}
-)
-.get also supports the where and where document filters. If no ids are supplied, it will return all items in the collection that match the where and where document filters.
-
-Choosing Which Data is Returned
-When using get or query you can use the include parameter to specify which data you want returned - any of embeddings, documents, metadatas, and for query, distances. By default, Chroma will return the documents, metadatas and in the case of query, the distances of the results. embeddings are excluded by default for performance and the ids are always returned. You can specify which of these you want returned by passing an array of included field names to the includes parameter of the query or get method. Note that embeddings will be returned as a 2-d numpy array in .get and a python list of 2-d numpy arrays in .query.
-
-
-# Only get documents and ids
-collection.get(
-    include=["documents"]
-)
-
-collection.query(
-    query_embeddings=[[11.1, 12.1, 13.1],[1.1, 2.3, 3.2], ...],
-    include=["documents"]
-)
-
-
 # How to call prefect blocks
 
 from prefect.blocks.notifications import SlackWebhook
 
 slack_webhook_block = SlackWebhook.load("product-channel")
 slack_webhook_block.notify("Hello from Prefect!")
+
+
+# Example of loading cursor docs
+
+# src/loaders/cursor/load_cursor_docs.py
+from bs4 import BeautifulSoup
+from prefect import flow
+
+from src.utils.network import fetch, fetch_rendered
+from src.loaders.models.models import DocsPage, CodeAssistantCompany
+
+BASE_URL = "https://docs.cursor.com"
+SITEMAP_URL = f"{BASE_URL}/sitemap.xml"
+
+
+def get_doc_pages_from_sitemap():
+    sitemap_xml = fetch(SITEMAP_URL)
+    soup = BeautifulSoup(sitemap_xml, "xml")
+    urls = []
+    for loc in soup.find_all("loc"):
+        url = loc.get_text()
+        urls.append(url)
+    return urls
+
+
+def parse_docs_file(html: str, url: str) -> DocsPage:
+    soup = BeautifulSoup(html, "html.parser")
+
+    # Extract the title: Prefer an <h1> tag; if missing, use the <title> element.
+    h1 = soup.find("h1")
+    if h1:
+        title = h1.get_text(strip=True)
+    elif soup.title:
+        title = soup.title.get_text(strip=True)
+    else:
+        title = "Untitled Document"
+
+    # Try to extract just the main content.
+    # Option 1: Look for a container that holds the MDX content.
+    content_container = soup.find(attrs={"data-mdx-content": True})
+    if content_container:
+        content = content_container.get_text(separator="\n", strip=True)
+    else:
+        # Option 2: If no MDX container, try to extract content from <main>.
+        main = soup.find("main")
+        if main:
+            # Remove navigation elements if they exist.
+            navbar = main.find(id="navbar")
+            if navbar:
+                navbar.decompose()
+            content = main.get_text(separator="\n", strip=True)
+        else:
+            # Fallback: use the entire document body.
+            content = soup.get_text(separator="\n", strip=True)
+
+    unique_id = f"{title}-{url}"
+
+    return DocsPage(
+        url=url,
+        title=title,
+        company=CodeAssistantCompany.CURSOR_ENTERPRISE,
+        content=content,
+        unique_id=unique_id,
+    )
+
+
+@flow(log_prints=True)
+def fetch_and_parse_cursor_docs():
+    urls = get_doc_pages_from_sitemap()
+    print(f"Found {len(urls)} doc file URLs in sitemap.")
+
+    docs_files = []
+
+    for url in urls:
+        print("URL: ")
+        print(url)
+        html = fetch(url)
+        doc_file = parse_docs_file(html, url)
+        docs_files.append(doc_file)
+
+    for docs_file in docs_files[:10]:
+        print(docs_file.model_dump_json(indent=2))
+        print("\n")
+
+    return docs_files
+
+
+if __name__ == "__main__":
+    fetch_and_parse_cursor_docs()
