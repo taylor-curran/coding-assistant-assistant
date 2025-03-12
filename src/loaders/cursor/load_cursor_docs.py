@@ -7,3 +7,5 @@ from src.loaders.models.models import DocsPage, CodeAssistantCompany
 
 BASE_URL = "https://docs.cursor.com"
 SITEMAP_URL = f"{BASE_URL}/sitemap.xml"
+
+# TODO: Implement cursor docs flow

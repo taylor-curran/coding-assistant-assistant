@@ -6,6 +6,7 @@ from src.loaders.codeium.load_codeium_changelog import fetch_and_parse_codeium_c
 import chromadb.utils.embedding_functions as embedding_functions
 from prefect.blocks.system import Secret
 from prefect.cache_policies import NO_CACHE
+from prefect.blocks.notifications import SlackWebhook
 
 # Initialize OpenAI API key.
 secret_block = Secret.load("openai-api-key")
