@@ -7,7 +7,6 @@ HEADERS = {
 }
 
 
-@task
 def fetch(url: str) -> str:
     """
     Fetches the raw HTML (or XML) content for a given URL using httpx.
@@ -19,7 +18,6 @@ def fetch(url: str) -> str:
         return response.text
 
 
-@task
 def fetch_rendered(url: str, sleep=3) -> str:
     """
     Fetches the rendered HTML content for a given URL using requests_html.
@@ -32,12 +30,9 @@ def fetch_rendered(url: str, sleep=3) -> str:
     :return: The fully rendered HTML content
     """
     session = HTMLSession()
-    r = session.get(url)
-
-    # Render the page to execute JavaScript (adjust sleep as needed)
-    r.html.render(sleep=sleep)
-
-    # Get the fully rendered HTML
-    rendered_html = r.html.html
-
-    return rendered_html
+    try:
+        r = session.get(url)
+        r.html.render(sleep=sleep)
+        return r.html.html
+    finally:
+        session.close()

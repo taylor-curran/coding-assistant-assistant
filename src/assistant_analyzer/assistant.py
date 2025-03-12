@@ -3,15 +3,12 @@
 import chromadb
 import chromadb.utils.embedding_functions as embedding_functions
 from prefect.blocks.system import Secret
-
-# --- Initialize your vector store ---
-# Load your OpenAI API key from a secret
-secret_block = Secret.load("openai-api-key")
-openai_api_key = secret_block.get()
+import os
 
 # Set up the embedding function
 openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-    api_key=openai_api_key, model_name="text-embedding-3-small"
+    api_key=os.getenv("OPENAI_API_KEY"),
+    model_name="text-embedding-3-small"
 )
 
 # Create a persistent client and get the collection

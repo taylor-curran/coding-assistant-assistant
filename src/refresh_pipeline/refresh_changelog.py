@@ -1,6 +1,6 @@
 import chromadb
 from datetime import datetime
-from prefect import flow, task
+from prefect import flow
 from src.loaders.cursor.load_cursor_changelog import fetch_and_parse_cursor_changelog
 from src.loaders.codeium.load_codeium_changelog import fetch_and_parse_codeium_changelog
 import chromadb.utils.embedding_functions as embedding_functions
@@ -28,7 +28,6 @@ def clean_metadata(metadata: dict) -> dict:
     return cleaned
 
 
-@task(cache_policy=NO_CACHE)
 def find_new_items(collection, changelogs):
     """
     Check each changelog by its unique_id and return a list of new items
@@ -52,7 +51,6 @@ def find_new_items(collection, changelogs):
     return new_items
 
 
-@task(cache_policy=NO_CACHE)
 def embed_and_add_items(collection, new_items):
     """
     Prepare metadata and add the new changelogs to the collection.
