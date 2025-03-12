@@ -3,24 +3,11 @@ from bs4 import BeautifulSoup
 from prefect import flow
 
 from src.utils.network import fetch, fetch_rendered
+from src.loaders.models.models import DocsPage, CodeAssistantCompany
 
 BASE_URL = "https://docs.codeium.com"
 SITEMAP_URL = f"{BASE_URL}/sitemap.xml"
 
-from enum import Enum
-from typing import Optional
-from pydantic import BaseModel
-
-class CodeAssistantCompany(str, Enum):
-    CODEIUM_ENTERPRISE = "Codeium_Enterprise"
-    CURSOR_ENTERPRISE = "Cursor_Enterprise"
-    COPILOT_ENTERPRISE = "Copilot_Enterprise"
-
-class DocsPage(BaseModel):
-    title: str
-    company: CodeAssistantCompany
-    content: str
-    unique_id: Optional[str] = None
 
 # model this off of get_blog_post_urls_from_sitemap()
 def get_doc_pages_from_sitemap():
@@ -34,12 +21,8 @@ def get_doc_pages_from_sitemap():
     return urls
 
 
-def parse_docs_file(html: str) -> DocsPage:
+def parse_docs_file(html: str, url: str) -> DocsPage:
     soup = BeautifulSoup(html, "html.parser")
-
-    # Debug: print the prettified HTML structure.
-    print('Pretty print')
-    print(soup.prettify()[:10000])
 
     # Extract the title: Prefer an <h1> tag; if missing, use the <title> element.
     h1 = soup.find("h1")
@@ -50,29 +33,33 @@ def parse_docs_file(html: str) -> DocsPage:
     else:
         title = "Untitled Document"
 
-    # Extract the content: try to use <article>, then a <div> with class "content",
-    # and finally fallback to the entire body text.
-    article = soup.find("article")
-    if article:
-        content = article.get_text(separator="\n", strip=True)
+    # Try to extract just the main content.
+    # Option 1: Look for a container that holds the MDX content.
+    content_container = soup.find(attrs={"data-mdx-content": True})
+    if content_container:
+        content = content_container.get_text(separator="\n", strip=True)
     else:
-        div_content = soup.find("div", class_="content")
-        if div_content:
-            content = div_content.get_text(separator="\n", strip=True)
-        elif soup.body:
-            content = soup.body.get_text(separator="\n", strip=True)
+        # Option 2: If no MDX container, try to extract content from <main>.
+        main = soup.find("main")
+        if main:
+            # Remove navigation elements if they exist.
+            navbar = main.find(id="navbar")
+            if navbar:
+                navbar.decompose()
+            content = main.get_text(separator="\n", strip=True)
         else:
+            # Fallback: use the entire document body.
             content = soup.get_text(separator="\n", strip=True)
-    
-    unique_id = f"{title}"
+
+    unique_id = f"{title}-{url}"
 
     return DocsPage(
+        url=url,
         title=title,
         company=CodeAssistantCompany.CODEIUM_ENTERPRISE,
         content=content,
-        unique_id=unique_id
+        unique_id=unique_id,
     )
-
 
 
 @flow(log_prints=True)
@@ -82,16 +69,18 @@ def fetch_and_parse_codeium_docs():
 
     docs_files = []
 
-    for url in urls[0:2]:
+    for url in urls:
         print("URL: ")
         print(url)
         html = fetch(url)
-        doc_file = parse_docs_file(html)
+        doc_file = parse_docs_file(html, url)
         docs_files.append(doc_file)
 
-    for docs_file in docs_files[:3]:
-            print(docs_file.model_dump_json(indent=2))
-            print("\n")
+    for docs_file in docs_files[:10]:
+        print(docs_file.model_dump_json(indent=2))
+        print("\n")
+
+    return docs_files
 
 
 if __name__ == "__main__":

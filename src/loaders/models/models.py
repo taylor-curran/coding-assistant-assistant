@@ -31,6 +31,7 @@ class ChangeLog(BaseModel):
 
 
 class DocsPage(BaseModel):
+    url: str
     title: str
     company: CodeAssistantCompany
     content: str
