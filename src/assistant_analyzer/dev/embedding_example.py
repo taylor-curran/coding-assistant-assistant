@@ -7,8 +7,7 @@ openai_api_key = Secret.load("openai-api-key").get()
 
 # Initialize embedding function
 openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-    api_key=openai_api_key,
-    model_name="text-embedding-3-small"
+    api_key=openai_api_key, model_name="text-embedding-3-small"
 )
 
 # Connect to Chroma collection
@@ -23,14 +22,16 @@ print("Keys: ")
 print(collection.peek().keys())
 
 print("IDs: ")
-print(collection.peek()['ids'])
+print(collection.peek()["ids"])
 
 # Example Embedding
-result = collection.get(ids=['Codeium_Enterprise_1.2.5_new_models'], include=['embeddings', 'documents'])
-example_embedding = result['embeddings']
-example_document = result['documents']
+result = collection.get(
+    ids=["Codeium_Enterprise_1.2.5_new_models"], include=["embeddings", "documents"]
+)
+example_embedding = result["embeddings"]
+example_document = result["documents"]
 
-print('-----------')
+print("-----------")
 print("Embedding: ")
 print(example_embedding)
 print(type(example_embedding))

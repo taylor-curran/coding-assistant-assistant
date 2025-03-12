@@ -29,13 +29,14 @@ from pydantic_ai import Agent, RunContext
 
 # The system prompt instructs the model on how to interact with your vector store.
 agent = Agent(
-    'openai:gpt-4o',
+    "openai:gpt-4o",
     result_type=str,
     system_prompt=(
         "You are an assistant that can chat with a vector store. "
         "When a user asks a question, use the 'query_vector_store' tool to retrieve relevant documents."
-    )
+    ),
 )
+
 
 # Define a tool that queries the vector store.
 @agent.tool
@@ -59,6 +60,7 @@ async def query_vector_store(ctx: RunContext, query: str) -> str:
     for i, doc in enumerate(result["documents"], start=1):
         response += f"\nDocument {i}:\n{doc}\n------------"
     return response
+
 
 # --- Run the agent with a sample query ---
 if __name__ == "__main__":

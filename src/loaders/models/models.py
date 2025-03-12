@@ -28,3 +28,10 @@ class ChangeLog(BaseModel):
     changes: str
     company: CodeAssistantCompany
     unique_id: Optional[str] = None
+
+
+class DocsPage(BaseModel):
+    title: str
+    company: CodeAssistantCompany
+    content: str
+    unique_id: Optional[str] = None

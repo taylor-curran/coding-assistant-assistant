@@ -2,7 +2,7 @@ import ast
 import astpretty
 
 # Your Python code as a string
-code = '''
+code = """
 from prefect.blocks.system import Secret
 import chromadb
 from chromadb.utils import embedding_functions
@@ -44,7 +44,7 @@ print(example_embedding.shape)
 
 print("Document: ")
 print(example_document)
-'''
+"""
 
 # Parse the code into an AST
 parsed_ast = ast.parse(code)
