@@ -9,6 +9,7 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; BlogLoader/1.0; +https://example.com)"
 }
 
+
 @task
 def fetch(url: str) -> str:
     """
@@ -19,6 +20,7 @@ def fetch(url: str) -> str:
         response = client.get(url)
         response.raise_for_status()
         return response.text
+
 
 @task
 def fetch_rendered(url: str) -> str:
@@ -33,7 +35,10 @@ def fetch_rendered(url: str) -> str:
         browser.close()
         return content
 
+
 if __name__ == "__main__":
-    rendered_html = fetch_rendered.fn("https://codeium.com/blog/amazon-codewhisperer-review")
+    rendered_html = fetch_rendered.fn(
+        "https://codeium.com/blog/amazon-codewhisperer-review"
+    )
     assert re.search(r"<h1.*?>", rendered_html)
     print("Rendered HTML fetched successfully.")

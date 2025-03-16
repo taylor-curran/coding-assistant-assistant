@@ -3,12 +3,19 @@
 import chromadb
 import chromadb.utils.embedding_functions as embedding_functions
 from prefect.blocks.system import Secret
-import os
+from pydantic_ai import Agent, RunContext
+from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.providers.openai import OpenAIProvider
+from prefect import flow
+from prefect.blocks.system import Secret
+
+# Initialize OpenAI API key.
+secret_block = Secret.load("openai-api-key")
+openai_api_key = secret_block.get()
 
 # Set up the embedding function
 openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-    api_key=os.getenv("OPENAI_API_KEY"),
-    model_name="text-embedding-3-small"
+    api_key=openai_api_key, model_name="text-embedding-3-small"
 )
 
 # Create a persistent client and get the collection
@@ -17,16 +24,11 @@ collection = client.get_collection(
     name="coding_assistant_document_dump", embedding_function=openai_ef
 )
 
-# (Optional) Print some basic info from your vector store
-print("Example metadata:", collection.peek()["metadatas"][0])
-print("Document count:", collection.count())
-
 # --- Create the PydanticAI agent ---
-from pydantic_ai import Agent, RunContext
+model = OpenAIModel("gpt-4o", provider=OpenAIProvider(api_key=openai_api_key))
 
-# The system prompt instructs the model on how to interact with your vector store.
 agent = Agent(
-    "openai:gpt-4o",
+    model,
     result_type=str,
     system_prompt=(
         "You are an assistant that can chat with a vector store. "
@@ -59,9 +61,32 @@ async def query_vector_store(ctx: RunContext, query: str) -> str:
     return response
 
 
+@flow(log_prints=True)
+def run_query(query: str):
+    """
+    Run a query by the agent.
+    """
+
+    # Print some basic info from your vector store
+    print(
+        "Vector store info:\n\n"
+        f"Example metadata: {collection.peek()['metadatas'][0]}\n"
+        f"Document count: {collection.count()}"
+        "\n\n"
+        "-------------------"
+    )
+
+    # Run the agent with the query
+    result = agent.run_sync(query)
+    print(
+        "Agent response:\n\n"
+        f"{result.data}"
+        "\n\n"
+        "-------------------"
+    )
+
+
 # --- Run the agent with a sample query ---
 if __name__ == "__main__":
     sample_query = "Did cursor introduce a feature like codeium's context awareness feature? If so, which version introduced it?"
-    result = agent.run_sync(sample_query)
-    print("Agent response:")
-    print(result.data)
+    run_query(sample_query)
