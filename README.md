@@ -48,19 +48,13 @@ Playwright requires browser binaries to operate. Install these with:
 playwright install
 ```
 
+## Coding Agent Requests for Web Scraping Use Case 
 
-## **TODO: Fix the uv run command**
-### 5. Running Your Application 
+**1. Access to Returned Data for Enhanced Code Generation** 
 
+I need the agent to have direct access to the data returned from web scraping requests. Currently, the agent writes parsing logic based solely on the source code without actually "seeing" the data. With this change, the agent would generate more precise and context-aware code, reducing the guesswork involved in handling diverse HTML structures.
+**2. Automated Code Cleanup Using Stack Trace Information** 
 
-Once your environment is set up, you can run your application using uv. For example, to run a module:
+After the agent generates and executes the code, it currently adds numerous lines in an attempt to cover all potential scenarios—often leading to a cluttered and inefficient codebase. By providing the agent with the stack trace, which details exactly which code paths were executed, we give it concrete evidence of what worked and what didn’t. This information is crucial for the agent to perform an effective cleanup, removing redundant lines and streamlining the final code. In essence, the stack trace acts like a roadmap, highlighting the parts of the code that are necessary and flagging the unnecessary ones, ultimately optimizing the code generated from its blind attempts.
 
-
-
-```bash
-uv run -m src.your_module
-```
-
-
-
----
+This two-pronged approach not only enhances the initial code generation but also ensures that the final product is clean, efficient, and maintainable.
