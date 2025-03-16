@@ -1,12 +1,15 @@
-from requests_html import HTMLSession
+# src/utils/network.py
+
+from playwright.sync_api import sync_playwright
 import httpx
+import re
 from prefect import task
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; BlogLoader/1.0; +https://example.com)"
 }
 
-
+@task
 def fetch(url: str) -> str:
     """
     Fetches the raw HTML (or XML) content for a given URL using httpx.
@@ -17,22 +20,20 @@ def fetch(url: str) -> str:
         response.raise_for_status()
         return response.text
 
-
-def fetch_rendered(url: str, sleep=3) -> str:
+@task
+def fetch_rendered(url: str) -> str:
     """
-    Fetches the rendered HTML content for a given URL using requests_html.
-    Uses HTMLSession to execute JavaScript on the page, which is necessary for
-    some websites to render their content. Adjust the sleep parameter as
-    needed to ensure the JavaScript has enough time to execute.
-
-    :param url: The URL to fetch
-    :param sleep: The number of seconds to wait for JavaScript to execute
-    :return: The fully rendered HTML content
+    Fetches the rendered HTML content for a given URL using Playwright.
     """
-    session = HTMLSession()
-    try:
-        r = session.get(url)
-        r.html.render(sleep=sleep)
-        return r.html.html
-    finally:
-        session.close()
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.goto(url, wait_until="networkidle")
+        content = page.content()  # Gets the fully rendered HTML
+        browser.close()
+        return content
+
+if __name__ == "__main__":
+    rendered_html = fetch_rendered.fn("https://codeium.com/blog/amazon-codewhisperer-review")
+    assert re.search(r"<h1.*?>", rendered_html)
+    print("Rendered HTML fetched successfully.")
