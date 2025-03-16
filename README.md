@@ -11,7 +11,7 @@ uv pip install pydantic beautifulsoup4 httpx lxml requests-html chromadb "lxml[h
 ### New Environment
 
 ```
-uv add playwright httpx beautifulsoup4 prefect lxml
+uv add playwright httpx beautifulsoup4 pydantic prefect lxml
 ```
 
 ```

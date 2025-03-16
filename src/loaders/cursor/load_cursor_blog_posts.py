@@ -39,6 +39,10 @@ def fetch_and_parse_cursor_blog_posts(limit: int = 5) -> None:
     """
     urls = get_blog_post_urls_from_sitemap()
     print(f"Found {len(urls)} blog post URLs in sitemap.")
+    for url in urls:
+        print(url)
+
+    return urls
 
 
 if __name__ == "__main__":

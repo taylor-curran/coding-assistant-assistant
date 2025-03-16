@@ -242,6 +242,7 @@ dependencies = [
     { name = "lxml" },
     { name = "playwright" },
     { name = "prefect" },
+    { name = "pydantic" },
 ]
 
 [package.metadata]
@@ -251,6 +252,7 @@ requires-dist = [
     { name = "lxml", specifier = ">=5.3.1" },
     { name = "playwright", specifier = ">=1.50.0" },
     { name = "prefect", specifier = ">=3.2.13" },
+    { name = "pydantic", specifier = ">=2.10.6" },
 ]
 
 [[package]]
