@@ -1,4 +1,4 @@
-# src/loaders/cursor/load_cursor_blog_posts.py
+# src/loaders/cursor/dev/load_cursor_blog_posts_debug.py
 
 from bs4 import BeautifulSoup
 import json
