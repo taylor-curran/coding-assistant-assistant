@@ -6,8 +6,13 @@ from prefect.blocks.system import Secret
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
-from prefect import flow
 from prefect.blocks.system import Secret
+import logfire
+
+# configure logfire
+logfire_secret_block = Secret.load("logfire-write-token")
+logfire.configure(token=logfire_secret_block.get())
+logfire.instrument_openai()
 
 # Initialize OpenAI API key.
 secret_block = Secret.load("openai-api-key")
@@ -60,8 +65,6 @@ async def query_vector_store(ctx: RunContext, query: str) -> str:
         response += f"\nDocument {i}:\n{doc}\n------------"
     return response
 
-
-@flow(log_prints=True)
 def run_query(query: str):
     """
     Run a query by the agent.
@@ -83,5 +86,5 @@ def run_query(query: str):
 
 # --- Run the agent with a sample query ---
 if __name__ == "__main__":
-    sample_query = "Did cursor introduce a feature like codeium's context awareness feature? If so, which version introduced it?"
+    sample_query = "Did cursor introduce a feature like codeium's mcp feature? If so, which version introduced it? Which company has the most advanced mcp support?"
     run_query(sample_query)

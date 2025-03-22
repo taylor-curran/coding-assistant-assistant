@@ -58,3 +58,8 @@ playwright install
     After the agent generates and executes the code, it currently adds numerous lines in an attempt to cover all potential scenarios—often leading to a cluttered and inefficient codebase. By providing the agent with the stack trace, which details exactly which code paths were executed, we give it concrete evidence of what worked and what didn’t. This information is crucial for the agent to perform an effective cleanup, removing redundant lines and streamlining the final code. In essence, the stack trace acts like a roadmap, highlighting the parts of the code that are necessary and flagging the unnecessary ones, ultimately optimizing the code generated from its blind attempts.
 
 This two-pronged approach not only enhances the initial code generation but also ensures that the final product is clean, efficient, and maintainable.
+
+
+
+TODO:
+- Add twitter loaders
