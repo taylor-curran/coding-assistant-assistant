@@ -1,4 +1,4 @@
-# src/assistant_analyzer/dev/assistant_backup.py
+# src/assistant_analyzer/dev/assistant_pydanticai.py
 
 import chromadb
 import chromadb.utils.embedding_functions as embedding_functions
