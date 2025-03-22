@@ -6,6 +6,12 @@ from pydantic_ai import Agent, RunContext
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from prefect.blocks.system import Secret
+import logfire
+
+# configure logfire
+logfire_secret_block = Secret.load("logfire-write-token")
+logfire.configure(token=logfire_secret_block.get())
+logfire.instrument_openai()
 
 # Initialize OpenAI API key.
 secret_block = Secret.load("openai-api-key")

@@ -16,3 +16,8 @@ dependencies = [
     "pydantic>=2.10.6",
     "openai-agents>=0.0.4",
 ]
+
+[dependency-groups]
+dev = [
+    "logfire>=3.9.0",
+]
