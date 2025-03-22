@@ -63,3 +63,5 @@ This two-pronged approach not only enhances the initial code generation but also
 
 TODO:
 - Add twitter loaders
+- Add chunking
+- Add evals

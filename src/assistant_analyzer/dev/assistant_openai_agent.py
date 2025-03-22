@@ -3,16 +3,11 @@
 import chromadb
 from chromadb.utils import embedding_functions
 from prefect.blocks.system import Secret
-import logfire
 from typing import Any
+import asyncio
 
 # Import the OpenAI Agents SDK
 from agents import Agent, Runner, function_tool, RunContextWrapper
-
-# Configure logfire
-logfire_secret_block = Secret.load("logfire-write-token")
-logfire.configure(token=logfire_secret_block.get())
-logfire.instrument_openai()
 
 # Initialize OpenAI API key using secret block
 secret_block = Secret.load("openai-api-key")
@@ -67,11 +62,16 @@ agent = Agent(
 )
 
 
-async def run_query_async(query: str):
+async def main(query: str):
+    """Run the agent with the given query.
+
+    Args:
+        query: The question to ask the agent
+
+    Returns:
+        The agent's response
     """
-    Run a query by the agent asynchronously.
-    """
-    # Print some basic info from your vector store
+    # Print some basic info from the vector store
     print(
         "Vector store info:\n\n"
         f"Example metadata: {collection.peek()['metadatas'][0]}\n"
@@ -82,20 +82,14 @@ async def run_query_async(query: str):
 
     # Run the agent with the query
     result = await Runner.run(agent, query)
+
+    # Print and return the result
     print("Agent response:\n\n" f"{result.final_output}" "\n\n" "-------------------")
     return result.final_output
 
 
-def run_query(query: str):
-    """
-    Run a query by the agent (synchronous wrapper).
-    """
-    import asyncio
-
-    return asyncio.run(run_query_async(query))
-
-
-# --- Run the agent with a sample query ---
+# --- Run the agent ---
 if __name__ == "__main__":
+    # Default sample query if run directly
     sample_query = "Did cursor introduce a feature like codeium's mcp feature? If so, which version introduced it? Which company has the most advanced mcp support?"
-    run_query(sample_query)
+    asyncio.run(main(sample_query))
