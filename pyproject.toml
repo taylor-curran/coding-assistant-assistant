@@ -15,4 +15,5 @@ dependencies = [
     "pydantic-ai>=0.0.40",
     "pydantic>=2.10.6",
     "logfire>=3.9.0",
+    "openai-agents>=0.0.4",
 ]

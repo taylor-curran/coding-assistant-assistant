@@ -1,23 +1,24 @@
-# src/assistant_analyzer/dev/assistant_pydanticai.py
+# src/assistant_analyzer/dev/assistant_openai_agent.py
 
 import chromadb
 from chromadb.utils import embedding_functions
-from pydantic_ai import Agent, RunContext
-from pydantic_ai.models.openai import OpenAIModel
-from pydantic_ai.providers.openai import OpenAIProvider
 from prefect.blocks.system import Secret
 import logfire
+from typing import Any
 
-# configure logfire
+# Import the OpenAI Agents SDK
+from agents import Agent, Runner, function_tool, RunContextWrapper
+
+# Configure logfire
 logfire_secret_block = Secret.load("logfire-write-token")
 logfire.configure(token=logfire_secret_block.get())
 logfire.instrument_openai()
 
-# Initialize OpenAI API key.
+# Initialize OpenAI API key using secret block
 secret_block = Secret.load("openai-api-key")
 openai_api_key = secret_block.get()
 
-# Set up the embedding function
+# Set up the embedding function with the API key directly
 openai_ef = embedding_functions.OpenAIEmbeddingFunction(
     api_key=openai_api_key, model_name="text-embedding-3-small"
 )
@@ -28,22 +29,10 @@ collection = client.get_collection(
     name="coding_assistant_document_dump", embedding_function=openai_ef
 )
 
-# --- Create the PydanticAI agent ---
-model = OpenAIModel("gpt-4o", provider=OpenAIProvider(api_key=openai_api_key))
 
-agent = Agent(
-    model,
-    result_type=str,
-    system_prompt=(
-        "You are an assistant that can chat with a vector store. "
-        "When a user asks a question, use the 'query_vector_store' tool to retrieve relevant documents."
-    ),
-)
-
-
-# Define a tool that queries the vector store.
-@agent.tool
-async def query_vector_store(ctx: RunContext, query: str) -> str:
+# --- Create the tool for querying the vector store ---
+@function_tool
+async def query_vector_store(ctx: RunContextWrapper[Any], query: str) -> str:
     """
     Query the vector store for documents related to the user's question.
 
@@ -58,18 +47,30 @@ async def query_vector_store(ctx: RunContext, query: str) -> str:
         n_results=3,
         include=["documents", "metadatas"],
     )
+
     # Build a response that summarizes the results
     response = "Here are some relevant documents from the vector store:\n"
-    for i, doc in enumerate(result["documents"], start=1):
+    for i, doc in enumerate(result["documents"][0], start=1):
         response += f"\nDocument {i}:\n{doc}\n------------"
     return response
 
 
-def run_query(query: str):
-    """
-    Run a query by the agent.
-    """
+# Create the agent with the tools and model
+agent = Agent(
+    name="Vector Store Assistant",
+    instructions=(
+        "You are an assistant that can chat with a vector store. "
+        "When a user asks a question, use the 'query_vector_store' tool to retrieve relevant documents."
+    ),
+    tools=[query_vector_store],
+    model="gpt-4o",
+)
 
+
+async def run_query_async(query: str):
+    """
+    Run a query by the agent asynchronously.
+    """
     # Print some basic info from your vector store
     print(
         "Vector store info:\n\n"
@@ -80,8 +81,18 @@ def run_query(query: str):
     )
 
     # Run the agent with the query
-    result = agent.run_sync(query)
-    print("Agent response:\n\n" f"{result.data}" "\n\n" "-------------------")
+    result = await Runner.run(agent, query)
+    print("Agent response:\n\n" f"{result.final_output}" "\n\n" "-------------------")
+    return result.final_output
+
+
+def run_query(query: str):
+    """
+    Run a query by the agent (synchronous wrapper).
+    """
+    import asyncio
+
+    return asyncio.run(run_query_async(query))
 
 
 # --- Run the agent with a sample query ---

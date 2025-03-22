@@ -439,6 +439,7 @@ dependencies = [
     { name = "logfire" },
     { name = "lxml" },
     { name = "openai" },
+    { name = "openai-agents" },
     { name = "playwright" },
     { name = "prefect" },
     { name = "pydantic" },
@@ -453,6 +454,7 @@ requires-dist = [
     { name = "logfire", specifier = ">=3.9.0" },
     { name = "lxml", specifier = ">=5.3.1" },
     { name = "openai", specifier = ">=1.66.3" },
+    { name = "openai-agents", specifier = ">=0.0.4" },
     { name = "playwright", specifier = ">=1.50.0" },
     { name = "prefect", specifier = ">=3.2.13" },
     { name = "pydantic", specifier = ">=2.10.6" },
@@ -1459,6 +1461,23 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a3/77/5172104ca1df35ed2ed8fb26dbc787f721c39498fc51d666c4db07756a0c/openai-1.66.3.tar.gz", hash = "sha256:8dde3aebe2d081258d4159c4cb27bdc13b5bb3f7ea2201d9bd940b9a89faf0c9", size = 397244 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/78/5a/e20182f7b6171642d759c548daa0ba20a1d3ac10d2bd0a13fd75704a9ac3/openai-1.66.3-py3-none-any.whl", hash = "sha256:a427c920f727711877ab17c11b95f1230b27767ba7a01e5b66102945141ceca9", size = 567400 },
+]
+
+[[package]]
+name = "openai-agents"
+version = "0.0.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "griffe" },
+    { name = "openai" },
+    { name = "pydantic" },
+    { name = "requests" },
+    { name = "types-requests" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c5/f7/5ae9c34e8381af26ef98c7ef8602a08888c358e2ce0362796a0d134f610d/openai_agents-0.0.4.tar.gz", hash = "sha256:297e8d5faeca753e1b303d860b7ac94d03a7e10382be738163dc6a10a3b7cc1c", size = 599300 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8c/ef/c71adf656feb405ad5a2eae8175330db928f64ea1cb3ceb41866645e5034/openai_agents-0.0.4-py3-none-any.whl", hash = "sha256:5577c3ee994fe0bd200d7283e4f7a614b3af19afeebcfb07b6ca6039a8a50a5c", size = 76080 },
 ]
 
 [[package]]
