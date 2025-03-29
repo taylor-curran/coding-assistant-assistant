@@ -114,3 +114,6 @@ def refresh_changelog():
 
 if __name__ == "__main__":
     refresh_changelog()
+
+# to run
+# python -m src.refresh_pipeline.refresh_changelog
