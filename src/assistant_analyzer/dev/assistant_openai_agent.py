@@ -84,7 +84,7 @@ async def main(query: str):
     result = await Runner.run(agent, query)
 
     # Print and return the result
-    print("Agent response:\n\n" f"{result.final_output}" "\n\n" "-------------------")
+    print(f"Agent response:\n\n{result.final_output}\n\n-------------------")
     return result.final_output
 
 

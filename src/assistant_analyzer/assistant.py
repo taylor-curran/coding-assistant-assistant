@@ -81,7 +81,7 @@ def run_query(query: str):
 
     # Run the agent with the query
     result = agent.run_sync(query)
-    print("Agent response:\n\n" f"{result.data}" "\n\n" "-------------------")
+    print(f"Agent response:\n\n{result.data}\n\n-------------------")
 
 
 # --- Run the agent with a sample query ---
